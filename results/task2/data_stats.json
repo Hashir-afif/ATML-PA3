@@ -1,0 +1,15 @@
+{
+  "n_train_images": 8713,
+  "n_eval_images": 528,
+  "n_caption_train_examples": 18000,
+  "vqa_pairs": {
+    "vqa_train": 1536,
+    "vqa_dev": 32,
+    "vqa_test": 96
+  },
+  "grounding_pairs": {
+    "grounding_dev": 24,
+    "grounding_test": 64
+  },
+  "failed_downloads": []
+}

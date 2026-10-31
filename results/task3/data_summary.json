@@ -1,0 +1,45 @@
+{
+  "math_verify_version": null,
+  "math": {
+    "alignment": {
+      "rows": 32000,
+      "token_ids_len_mismatch": 0,
+      "logp_len_mismatch": 0,
+      "kl_len_mismatch": 0,
+      "zero_length_rollouts": 0,
+      "capped_rollouts": 523,
+      "null_extractions": 521,
+      "retained_tokens_total": 20742094,
+      "rollouts_per_question": [
+        32
+      ]
+    },
+    "n_questions": 1000,
+    "rollout_accuracy": 0.66315625,
+    "mean_groups_per_question": 5.489,
+    "questions_with_grouping_fallback": 1
+  },
+  "mathvista": {
+    "alignment": {
+      "rows": 32000,
+      "token_ids_len_mismatch": 0,
+      "logp_len_mismatch": 0,
+      "kl_len_mismatch": 0,
+      "zero_length_rollouts": 0,
+      "capped_rollouts": 487,
+      "null_extractions": 3032,
+      "retained_tokens_total": 8961703,
+      "rollouts_per_question": [
+        32
+      ],
+      "img_attn_total_len_mismatch": 0,
+      "prompt_text_attn_total_len_mismatch": 0,
+      "generated_text_attn_total_len_mismatch": 0,
+      "attn_prev_counts_len_mismatch": 0
+    },
+    "n_questions": 1000,
+    "rollout_accuracy": 0.5444375,
+    "mean_groups_per_question": 3.96,
+    "questions_with_grouping_fallback": 0
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "math": {
+    "fixed32_dev_accuracy": 0.825,
+    "agreement": {
+      "tau": 0.5,
+      "gamma": null,
+      "dev_accuracy": 0.8169999999999998,
+      "dev_mean_cost": 5001.3095
+    },
+    "quality": {
+      "tau": 0.5,
+      "gamma": 0.0,
+      "dev_accuracy": 0.8190000000000001,
+      "dev_mean_cost": 5408.6915
+    }
+  },
+  "mathvista": {
+    "fixed32_dev_accuracy": 0.6375,
+    "agreement": {
+      "tau": 0.625,
+      "gamma": null,
+      "dev_accuracy": 0.633,
+      "dev_mean_cost": 5313.3965
+    },
+    "quality": {
+      "tau": 0.625,
+      "gamma": 0.0,
+      "dev_accuracy": 0.6325,
+      "dev_mean_cost": 5378.8035
+    }
+  }
+}

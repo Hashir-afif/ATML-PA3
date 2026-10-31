@@ -1,0 +1,49 @@
+# Task 3: test-time compute on supplied LLM/VLM rollouts + a small live MATH experiment.
+seed: 6304
+
+data:
+  raw_dir: data/task3/raw
+  datasets:
+    math: {folder: qwen25-math, kind: llm}
+    mathvista: {folder: qwen25vl-mathvista, kind: vlm}
+  mathvista_metadata: data/task3/mathvista_testmini.json   # released question metadata (testmini.json)
+  splits_file: data/task3/splits.json                       # fixed file
+  orders_file: data/task3/orders.json                       # fixed file: 10 permutations of 32 rollouts per question
+  n_dev: 200
+  n_orders: 10
+  n_rollouts: 32
+  answer_cache: results/task3/cache
+
+offline:
+  budgets: [1, 2, 4, 8, 16, 32]
+  n_bootstrap: 1000
+  visconf_quantiles: [0.05, 0.95]
+  math_verify_max_len: 300       # implementation choice: longer answers are grouped by exact string only
+  grouping_timeout_s: 120        # per-question timeout for math-verify grouping (falls back to exact strings)
+  n_illustrative_questions: 2
+
+adaptive:
+  checkpoints: [4, 8, 16]
+  tau: [0.5, 0.625, 0.75, 0.875, 1.0]
+  gamma: [0.0, 0.1, 0.25, 0.5]
+  tolerance_pp: 1.0
+
+live:
+  model_id: Qwen/Qwen2.5-3B-Instruct
+  revision: aa8e72537993ba99e69dfaafa59ed015b17504d1     # pinned in the supplied README.MD
+  dtype: float16
+  n_questions: 50
+  system: "You are a helpful assistant."
+  suffix: "\n\nThink step by step inside <think> </think> tags, then give your final answer inside \\boxed{}."
+  review_instruction: "Review the solution above. Identify and correct any errors; if it is correct, retain its answer. Give your final answer inside \\boxed{}."
+  temperature: 0.7
+  top_p: 0.8
+  top_k: 20
+  repetition_penalty: 1.0
+  single_max_new: 3072
+  parallel_n: 3
+  parallel_max_new: 1024
+  revision_max_new: 2048
+
+paths:
+  results: results/task3

@@ -1,0 +1,44 @@
+{
+  "task1": {
+    "n_train": 40000,
+    "exact_overlap_with_gsm8k_test": 0,
+    "prefix60_overlap_with_gsm8k_test": 0,
+    "probe_set_present": true,
+    "note": "GSM8K test is evaluation-only; HellaSwag/BoolQ/ARC are not used in training."
+  },
+  "task2": {
+    "train_vs_eval_overlap": {
+      "vqa_dev": 0,
+      "vqa_test": 0,
+      "grounding_dev": 0,
+      "grounding_test": 0,
+      "captions_dev": 0
+    },
+    "eval_pairwise_overlap": {
+      "vqa_dev|vqa_test": 0,
+      "vqa_dev|grounding_dev": 0,
+      "vqa_dev|grounding_test": 0,
+      "vqa_dev|captions_dev": 0,
+      "vqa_test|grounding_dev": 0,
+      "vqa_test|grounding_test": 0,
+      "vqa_test|captions_dev": 0,
+      "grounding_dev|grounding_test": 0,
+      "grounding_dev|captions_dev": 0,
+      "grounding_test|captions_dev": 0
+    },
+    "vqa_question_id_overlap_train_eval": 0
+  },
+  "task3": {
+    "math": {
+      "dev_eval_overlap": 0,
+      "n_dev": 200,
+      "n_eval": 800,
+      "live_subset_in_eval": true
+    },
+    "mathvista": {
+      "dev_eval_overlap": 0,
+      "n_dev": 200,
+      "n_eval": 800
+    }
+  }
+}

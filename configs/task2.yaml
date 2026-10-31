@@ -1,0 +1,83 @@
+# Task 2: SigLIP-Qwen VLM, three-stage curriculum, visual-grounding evaluation.
+# Values fixed by the PA3 manual unless marked "implementation choice".
+seed: 6304
+model_id: Qwen/Qwen3-0.6B
+vision_id: google/siglip-base-patch16-224
+enable_thinking: false
+visual_tokens: 196            # 14 x 14 patch grid; the optional variant pools 2 x 2 blocks to 49
+
+data:
+  raw_dir: data/task2/raw
+  image_dir: data/task2/images
+  feature_dir: data/task2/features
+  manifest: data/task2/manifest.json        # fixed file: every selected ID (written once by data_prep)
+  pools: data/task2/grounding_pools_train.json   # fixed file: reusable training pair pools
+  n_caption_train_images: 6000
+  captions_per_train_image: 3
+  n_caption_dev_images: 96
+  vqa_counts:                               # yes/no, number, other pairs
+    train: {yes/no: 640, number: 256, other: 640}
+    dev: {yes/no: 12, number: 8, other: 12}
+    test: {yes/no: 36, number: 24, other: 36}
+  vqa_min_agreement: 8                      # of 10 annotators, for each image of the pair
+  grounding_pairs: {dev: {presence: 12, counting: 12}, test: {presence: 32, counting: 32}}  # 50/50 split: implementation choice
+  grounding_pool_size: {presence: 20000, counting: 20000}  # implementation choice (pairs may be resampled)
+  count_range: [1, 4]
+  # Label-quality filters (implementation choice, see README): ignore categories with crowd annotations for
+  # counting, and require every counted instance / at least one positive instance to be reasonably visible.
+  presence_min_area_frac: 0.01
+  count_min_area_frac: 0.005
+  download_workers: 16
+
+prompts:
+  caption_instruction: "Write a short caption for this image."
+  answer_suffix: "Answer the question using a single word or phrase."   # implementation choice (LLaVA-1.5 style)
+
+caps:
+  question_tokens: 80
+  caption_target_tokens: 64
+  answer_target_tokens: 16
+
+train:
+  microbatch: 8
+  grad_accum: 2                # effective batch 16
+  weight_decay: 0.01           # on >= 2-D tensors; biases / 1-D excluded (same rule as Task 1)
+  max_grad_norm: 1.0
+  warmup_frac: 0.05
+  min_lr_frac: 0.10
+  gradient_checkpointing: true
+  checkpoint_every: 250
+  dev_eval_updates: [0, 500, 1000, 1500, 2000, 2250, 2500, 3000, 3500, 3750, 4000, 4500]
+  calibration_images: 512      # training images used to calibrate connector output magnitude
+  stages:
+    - name: caption_alignment
+      updates: 2250
+      connector_lr: 1.0e-3
+      lora_lr: null
+      mixture: {caption: 1.0}   # two passes over the 18,000 caption examples, no replacement
+    - name: visual_instruction_tuning
+      updates: 1500
+      connector_lr: 1.0e-4
+      lora_lr: 2.0e-5
+      mixture: {presence: 0.5, counting: 0.25, caption: 0.25}
+    - name: natural_vqa
+      updates: 750
+      connector_lr: 5.0e-5
+      lora_lr: 1.0e-5
+      mixture: {vqa: 0.7, presence: 0.1, counting: 0.1, caption: 0.1}
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  targets: [q_proj, k_proj, v_proj, o_proj]
+
+eval:
+  max_new_tokens: 16
+  batch_size: 8
+  n_bootstrap: 4000
+  conditions: [correct, swap, mismatch, no_image]
+
+paths:
+  checkpoints: checkpoints/task2
+  results: results/task2

@@ -1,0 +1,57 @@
+{
+  "vision_id": "google/siglip-base-patch16-224",
+  "dtype_stored": "float16",
+  "encoder_dtype": "float32",
+  "processor": {
+    "_processor_class": "SiglipProcessor",
+    "image_processor_type": "SiglipImageProcessor",
+    "do_resize": true,
+    "size": {
+      "height": 224,
+      "width": 224
+    },
+    "resample": 3,
+    "do_rescale": true,
+    "rescale_factor": 0.00392156862745098,
+    "do_normalize": true,
+    "image_mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "image_std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "do_convert_rgb": null
+  },
+  "splits": {
+    "train2014": {
+      "n_images": 8713,
+      "seconds": 153.7022875000257,
+      "bytes": 2623101056
+    },
+    "val2014": {
+      "n_images": 528,
+      "seconds": 12.943786400021054,
+      "bytes": 158957696
+    }
+  },
+  "encoder_load_seconds": 1.6076197000220418,
+  "post_layernorm_calls_per_forward": 1,
+  "layernorm_once_max_abs_diff": 0.0,
+  "memory": {
+    "peak_allocated_gb": 0.8595113754272461,
+    "peak_reserved_gb": 1.146484375
+  },
+  "environment": {
+    "python": "3.12.13",
+    "platform": "win32",
+    "git_commit": null,
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.1",
+    "cuda": "12.8",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  }
+}

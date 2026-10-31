@@ -1,0 +1,17 @@
+{
+  "python": "3.12.13",
+  "platform": "win32",
+  "git_commit": null,
+  "torch": "2.11.0+cu128",
+  "transformers": "4.57.1",
+  "cuda": "12.8",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+  "cuda_available": true,
+  "gpu_total_gb": 7.99560546875,
+  "disk_free_gb": 530.5445213317871,
+  "missing_inputs": [],
+  "lm_eval_version": "0.4.13",
+  "math_verify_version": "unknown",
+  "datasets_version": "4.8.5",
+  "accelerate_version": "1.15.0"
+}

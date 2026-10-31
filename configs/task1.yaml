@@ -1,0 +1,98 @@
+# Task 1: LLM fine-tuning (Full FT, Full FT + L2-SP, LoRA-4, LoRA-16, OPLoRA-16).
+# Every value below is fixed by the PA3 manual unless marked "implementation choice".
+seed: 6304
+model_id: Qwen/Qwen3-0.6B
+enable_thinking: false
+
+data:
+  dataset_id: meta-math/MetaMathQA
+  split: train
+  gsm8k_id: openai/gsm8k        # GSM8K test questions used only for the exclusion filter
+  gsm8k_config: main
+  n_examples: 40000
+  max_length: 2048              # formatted length (prompt + response + end-of-turn) must be <= this
+  train_ids_file: data/task1/train_ids.json        # fixed file, written once
+  probe_set_file: data/task1/probe_set.json        # fixed file, written once
+  qualitative_file: data/task1/first_plot_questions.yaml   # course-specified 24 prompts (unchanged)
+  tokenized_cache: data/task1/train_tokenized.pt   # derived cache (rebuilt deterministically if missing)
+
+train:
+  microbatch: 2
+  grad_accum: 16                # effective batch 32
+  total_updates: 1250           # 40,000 examples, one epoch
+  warmup_updates: 38
+  schedule: cosine              # cosine decay to zero after linear warmup (transformers convention)
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  weight_decay: 0.01            # excludes biases and parameters with fewer than two dimensions
+  max_grad_norm: 1.0
+  gradient_checkpointing: true
+  checkpoint_updates: [312, 625, 937, 1250]   # 9,984 / 20,000 / 29,984 / 40,000 examples
+  midpoint_update: 625
+  loss_chunk_tokens: 256        # implementation choice: lm_head + CE computed in chunks to bound memory
+  log_every: 1
+
+methods:
+  full:
+    kind: full
+    lr: 2.0e-5
+    l2sp_lambda: 0.0
+  l2sp:
+    kind: full
+    lr: 2.0e-5
+    l2sp_lambda: 1.0e-3
+  lora4:
+    kind: lora
+    lr: 1.0e-3
+    r: 4
+    alpha: 8
+  lora16:
+    kind: lora
+    lr: 1.0e-3
+    r: 16
+    alpha: 32
+  oplora16:
+    kind: oplora
+    lr: 1.0e-3
+    r: 16
+    alpha: 32
+    protect_k: 128
+
+adapter:
+  dropout: 0.05
+  targets: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+# Full FT optimizer-state offload (implementation choice forced by the 8 GB GPU): FP32 AdamW moments live in
+# CPU RAM and are streamed per tensor; the update rule is identical to torch.optim.AdamW.
+offload_optimizer_states: true
+
+eval:
+  dtype: float16
+  gsm8k:
+    task: gsm8k_cot
+    num_fewshot: 0
+    apply_chat_template: true
+    max_gen_toks: 1024
+    batch_size: 32
+  likelihood:
+    tasks: [hellaswag, boolq, arc_easy]
+    num_fewshot: 0
+    apply_chat_template: false
+    batch_size: 32
+  conditions: [baseline, full_mid, full, l2sp, lora4, lora16, oplora16]
+
+diagnostics:
+  layers: [0, 13, 27]
+  module: down_proj
+  protect_k: 128
+  n_probe_gsm8k: 32
+  n_probe_hellaswag: 32
+
+qualitative:
+  max_new_tokens: 512
+  batch_size: 24
+
+paths:
+  checkpoints: checkpoints/task1
+  merged: checkpoints/task1/merged
+  results: results/task1

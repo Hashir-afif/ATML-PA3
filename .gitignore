@@ -1,0 +1,26 @@
+# environment
+.venv/
+__pycache__/
+*.pyc
+
+# large or downloaded artifacts (never commit raw datasets, public weights or checkpoints)
+checkpoints/
+data/task1/train_tokenized.pt
+data/task1/first_plot_questions.yaml
+data/task2/raw/
+data/task2/images/
+data/task2/features/
+data/task3/raw/
+data/task3/mathvista_testmini.json
+results/task3/cache/
+results/task1/diagnostics/base_down_proj_inputs.pt
+*_smoke/
+
+# run-time bookkeeping and the working semi-report (not submission material)
+results/_overnight/
+results/report.md
+*.tmp
+*.part
+
+# course manual (not code; kept local only)
+ATML-PA3*.pdf
