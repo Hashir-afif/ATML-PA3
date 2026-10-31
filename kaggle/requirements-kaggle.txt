@@ -1,0 +1,14 @@
+# Task 1 dependencies on Kaggle. torch, numpy, pandas, scipy and matplotlib come from the Kaggle image (CUDA build
+# matched to its driver); the libraries that define model loading, tokenization and evaluation are pinned to the
+# same versions as requirements.lock.txt so results are comparable with the local environment.
+transformers==4.57.1
+tokenizers==0.22.1
+accelerate==1.15.0
+datasets==4.8.5
+huggingface-hub==0.36.2
+safetensors==0.8.0
+lm-eval[hf]==0.4.13
+evaluate==0.4.6
+sqlitedict==2.1.0
+tabulate==0.10.0
+pyyaml>=6.0

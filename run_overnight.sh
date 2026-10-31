@@ -19,32 +19,8 @@ PY=".venv/Scripts/python.exe"
 export PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8 HF_HUB_DISABLE_TELEMETRY=1 TOKENIZERS_PARALLELISM=false
 OUT="results/_overnight"; LOGS="$OUT/logs"; DONE="$OUT/done"; STATUS="$OUT/STATUS.txt"
 mkdir -p "$LOGS" "$DONE"
-declare -A FAILED=()
 PHASE="${1:-all}"
-
-note() { echo "[$(date '+%F %T')] $*" | tee -a "$STATUS"; }
-
-# run_step NAME "DEPS (space separated step names)" python-args...
-run_step() {
-  local name="$1" deps="$2"; shift 2
-  if [ -f "$DONE/$name" ]; then note "SKIP  $name (done)"; return 0; fi
-  for d in $deps; do
-    if [ -n "${FAILED[$d]:-}" ]; then note "SKIP  $name (dependency $d failed)"; FAILED[$name]=1; return 1; fi
-  done
-  for attempt in 1 2; do
-    note "START $name (attempt $attempt)"
-    local t0=$(date +%s)
-    if "$PY" "$@" >> "$LOGS/$name.log" 2>&1; then
-      note "OK    $name ($(( ($(date +%s) - t0) / 60 )) min)"
-      date '+%F %T' > "$DONE/$name"
-      return 0
-    fi
-    note "FAIL  $name attempt $attempt -- last lines of $LOGS/$name.log:"
-    grep -v -iE "warn|Timeout is disabled|you must provide|logic for timeout" "$LOGS/$name.log" | tail -n 15 | tee -a "$STATUS"
-  done
-  FAILED[$name]=1
-  return 1
-}
+source scripts/run_lib.sh
 
 note "===== run_overnight.sh phase=$PHASE pid=$$ ====="
 
@@ -120,4 +96,5 @@ esac
 
 # Steps whose outputs change as more runs finish are re-run on every invocation (cheap, idempotent).
 for s in t1_diagnostics t1_qual_export t1_summarize t2_summarize t3_summarize leakage_check; do rm -f "$DONE/$s"; done
-if [ ${#FAILED[@]} -eq 0 ]; then note "===== phase $PHASE: ALL DONE ====="; else note "===== phase $PHASE finished with failures: ${!FAILED[*]} ====="; fi
+if [ ${#FAILED[@]} -eq 0 ] && [ ${#PAUSED[@]} -eq 0 ]; then note "===== phase $PHASE: ALL DONE ====="
+else note "===== phase $PHASE unfinished -- $(unfinished) ====="; fi

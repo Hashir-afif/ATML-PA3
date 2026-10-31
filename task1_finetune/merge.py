@@ -38,6 +38,13 @@ def main():
     ck = rel(cfg["paths"]["checkpoints"]) / args.method / f"update_{total:04d}"
     assert (ck / "COMPLETE").exists(), f"missing final checkpoint {ck}"
     out = rel(cfg["paths"]["merged"]) / args.method
+    res = rel(cfg["paths"]["results"])
+    checked = (res / "merge_checks" / f"{args.method}.json").exists()
+    consumers_done = (res / "eval" / args.method / "aggregate.json").exists() and \
+        (res / "qualitative" / f"{args.method}.jsonl").exists()
+    if checked and ((out / "config.json").exists() or consumers_done):
+        log(f"{args.method}: merged model exists or its evaluation and qualitative outputs are complete; skipping")
+        return
     tok = load_tokenizer(cfg["model_id"])
 
     factors = load_file(str(ck / "adapter_effective.safetensors"))

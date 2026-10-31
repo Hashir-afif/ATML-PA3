@@ -18,7 +18,9 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import shutil
+import sys
 import time
 from pathlib import Path
 
@@ -32,6 +34,9 @@ from common.utils import (append_jsonl, capture_rng_state, dir_size_bytes, envir
 from task1_finetune.data import collate, get_train_data, load_tokenizer, n_response_tokens
 from task1_finetune.modeling import build_model, sft_loss_sum
 from task1_finetune.optim import L2SPReference, OffloadedAdamW, param_groups
+
+
+DEADLINE_EXIT = 3  # exit code: paused at the session deadline with a recovery checkpoint (not a failure)
 
 
 def apply_smoke(cfg: dict) -> dict:
@@ -88,6 +93,23 @@ def save_checkpoint(cfg, method, kind, model, tok, opt, sched, scaler, update, r
     meta["recovery_state_bytes"] = dir_size_bytes(d)
     save_json(meta, d / "meta.json")
     return meta
+
+
+def prune_recovery(cfg: dict, method: str, latest: int, keep_weights: set[int]) -> None:
+    """Delete superseded recovery state to save disk: optimizer/scheduler/RNG state of every checkpoint older than
+    ``latest``, and full-model weights of older checkpoints except the evaluated ones (midpoint, final). Adapter
+    files are tiny and kept. Only enabled where disk is limited (``train.prune_recovery``)."""
+    for p in (rel(cfg["paths"]["checkpoints"]) / method).glob("update_*"):
+        u = int(p.name.split("_")[1])
+        if u >= latest or not (p / "COMPLETE").exists():
+            continue
+        (p / "training_state.pt").unlink(missing_ok=True)
+        if u not in keep_weights and (p / "model").exists():
+            shutil.rmtree(p / "model")
+        meta = load_json(p / "meta.json")
+        if not meta.get("pruned"):
+            meta["pruned"] = True
+            save_json(meta, p / "meta.json")
 
 
 def main():
@@ -157,6 +179,9 @@ def main():
     elif log_path.exists():
         log_path.unlink()
 
+    # Optional wall-clock budget (e.g. a 12 h Kaggle session): stop at the next update boundary after this epoch
+    # time, save a full recovery checkpoint and exit with DEADLINE_EXIT so the orchestrator can resume later.
+    deadline = float(os.environ.get("PA3_DEADLINE_EPOCH", "inf"))
     seg_t0 = time.perf_counter()
     seg_start = start
     pad = tok.pad_token_id
@@ -204,7 +229,9 @@ def main():
         if (update + 1) % 10 == 0 or update == start:
             log(f"{args.method} update {update + 1}/{total} loss {sft:.4f} lr {lr_used:.2e} "
                 f"gnorm {grad_norm:.3f} {row['seconds']:.1f}s/upd")
-        if (update + 1) in tcfg["checkpoint_updates"]:
+        scheduled = (update + 1) in tcfg["checkpoint_updates"]
+        out_of_time = time.time() > deadline and update + 1 < total
+        if scheduled or out_of_time:
             seg_time = time.perf_counter() - seg_t0
             mem = peak_memory()
             st_copy = dict(run_state)
@@ -215,6 +242,12 @@ def main():
             meta = save_checkpoint(cfg, args.method, kind, model, tok, opt, sched, scaler, update + 1, st_copy, l2sp_ref)
             run_state, seg_t0, seg_start = st_copy, time.perf_counter(), update + 1
             log(f"saved checkpoint at update {update + 1}: {meta}")
+            if tcfg.get("prune_recovery", False):
+                prune_recovery(cfg, args.method, update + 1, keep_weights={tcfg["midpoint_update"], total})
+            if out_of_time:
+                log(f"{args.method}: session deadline reached after update {update + 1}; recovery checkpoint saved, "
+                    f"exiting with code {DEADLINE_EXIT} (rerun to resume)")
+                sys.exit(DEADLINE_EXIT)
 
     rows = load_jsonl(log_path)
     final_meta = {int(p.name.split("_")[1]): load_json(p / "meta.json") for p in
@@ -231,7 +264,7 @@ def main():
         "checkpoints": final_meta, "checkpoint_weights_bytes_final": final_meta.get(total, {}).get("weights_bytes"),
         "precision": "FP32 master weights + FP16 autocast" if kind == "full" else "frozen FP16 backbone + FP32 adapters, FP16 autocast",
         "optimizer": type(opt).__name__, "environment": environment_info(),
-        "method_overhead": {},
+        "config_overrides": cfg.get("_overrides"), "method_overhead": {},
     }
     if kind != "full":
         summary["method_overhead"].update(adapter=info["adapter"])

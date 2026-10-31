@@ -92,7 +92,8 @@ def auto_features(r: dict) -> dict:
             f["auto_json_valid"] = False
     if r["format"] == "template":
         keys = re.findall(r"^(\w+) = #", r["user"], flags=re.M)
-        f["auto_template_keys_present"] = f"{sum(bool(re.search(rf'^\s*{k}\s*=', resp, flags=re.M)) for k in keys)}/{len(keys)}"
+        present = sum(bool(re.search(r"^\s*" + re.escape(k) + r"\s*=", resp, flags=re.M)) for k in keys)
+        f["auto_template_keys_present"] = f"{present}/{len(keys)}"
     return f
 
 

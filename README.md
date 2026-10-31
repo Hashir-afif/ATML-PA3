@@ -49,6 +49,28 @@ Plan for roughly three nights. Keep the laptop plugged in and stop Windows from 
 (for example `powercfg /change standby-timeout-ac 0`, restored afterwards). Disk: Task 1 recovery checkpoints
 use ~60 GB (Full FT states are 7.2 GB each); Task 2 features ~2.8 GB.
 
+### Running Task 1 on Kaggle (faster option)
+
+Task 1 is the long phase. `kaggle/pa3_task1_kaggle.ipynb` runs all of it on Kaggle's free **2 × T4 (16 GB)**,
+two training runs in parallel (one per GPU), while the local machine runs Tasks 2 and 3
+(`./run_overnight.sh task3` then `./run_overnight.sh task2`).
+
+1. Kaggle -> *Create -> Import Notebook* -> upload `kaggle/pa3_task1_kaggle.ipynb`. Settings: Accelerator
+   **GPU T4 x2**, Internet **On** (needs a phone-verified account).
+2. *Save Version -> Save & Run All (Commit)*. Each session runs up to ~11 h in the background; training pauses
+   cleanly at the deadline with a recovery checkpoint (`PA3_DEADLINE_EPOCH`, exit code 3) and evaluations only
+   start when enough time is left.
+3. If the last cell says `TASK 1 NOT FINISHED`, attach this version's output (*Add Input -> Your Work*) and commit
+   again. `kaggle/carry.py` restores results and checkpoints; resumption is bit-identical (verified locally).
+4. Download `results_task1.zip` and unzip it in the repository root.
+
+Kaggle-specific settings are applied as recorded config overrides (`PA3_OVERRIDES_TASK1`), never hyperparameter
+changes: no optimizer offload (16 GB holds FP32 weights + gradients + AdamW states, peak ~10.4 GB measured on
+smoke batches), checkpoints in scratch space, and `train.prune_recovery` (superseded optimizer states and
+non-evaluated weights deleted once a newer checkpoint exists, to fit the ~20 GB output limit). torch comes from
+the Kaggle image; transformers / tokenizers / lm-eval / datasets are pinned to the local versions
+(`kaggle/requirements-kaggle.txt`). All seven Task 1 conditions are evaluated in the same environment.
+
 ## 3. Per-task commands
 
 Every entry point takes `--config configs/taskN.yaml` (the default) and most accept `--smoke` for a tiny

@@ -29,8 +29,26 @@ def rel(path: str | Path) -> Path:
 
 
 def load_config(path: str | Path) -> dict:
+    """Load a YAML config, applying optional overrides from ``PA3_OVERRIDES_<STEM>`` (e.g. PA3_OVERRIDES_TASK1).
+
+    The variable holds a JSON object of dotted keys -> values, e.g.
+    ``{"offload_optimizer_states": false, "paths.checkpoints": "/kaggle/tmp/checkpoints/task1"}``. It is meant
+    for platform-specific settings (storage paths, memory strategy), never for experimental hyperparameters;
+    applied overrides are kept under ``cfg["_overrides"]`` so run summaries record them.
+    """
     with open(rel(path), "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+    raw = os.environ.get(f"PA3_OVERRIDES_{Path(path).stem.upper()}")
+    if raw:
+        overrides = json.loads(raw)
+        for dotted, value in overrides.items():
+            node = cfg
+            *parents, last = dotted.split(".")
+            for k in parents:
+                node = node.setdefault(k, {})
+            node[last] = value
+        cfg["_overrides"] = overrides
+    return cfg
 
 
 def set_seed(seed: int) -> None:

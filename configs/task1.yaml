@@ -29,6 +29,8 @@ train:
   gradient_checkpointing: true
   checkpoint_updates: [312, 625, 937, 1250]   # 9,984 / 20,000 / 29,984 / 40,000 examples
   midpoint_update: 625
+  prune_recovery: false         # true on disk-limited hosts (Kaggle): drop superseded optimizer states and
+                                # non-evaluated weights once a newer recovery checkpoint exists
   loss_chunk_tokens: 256        # implementation choice: lm_head + CE computed in chunks to bound memory
   log_every: 1
 
