@@ -1,0 +1,9 @@
+# Store text with LF so shell scripts run on Linux (Kaggle/Colab); binaries untouched.
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.pdf binary
+*.parquet binary
+*.pt binary
+*.safetensors binary
+*.zip binary
