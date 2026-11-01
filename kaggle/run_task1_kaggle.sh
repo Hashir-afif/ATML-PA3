@@ -23,7 +23,9 @@ export PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8 HF_HUB_DISABLE_TELEMETRY=1 TOKE
 CKPT="${PA3_CKPT_ROOT:-/kaggle/tmp/checkpoints/task1}"
 export PA3_CKPT_ROOT="$CKPT"
 export PA3_OVERRIDES_TASK1="{\"offload_optimizer_states\": false, \"train.prune_recovery\": true, \"paths.checkpoints\": \"$CKPT\", \"paths.merged\": \"$CKPT/merged\"}"
-EVAL_MIN="${EVAL_MIN:-90}"   # minutes an lm-eval pass needs on a T4 (GSM8K generation dominates); conservative
+EVAL_MIN="${EVAL_MIN:-150}" # minutes one evaluate.py pass needs: measured 117 min GSM8K generation (batch 8) +
+                            # 15 min likelihood tasks (batch 4) = 132 min on an 8 GB laptop GPU; 150 min adds
+                            # margin for a slower T4. These batch sizes are fixed, not "auto" -- see configs/task1.yaml.
 OUT="results/_overnight"; LOGS="$OUT/logs"; DONE="$OUT/done"; STATUS="$OUT/STATUS.txt"
 mkdir -p "$LOGS" "$DONE" "$CKPT"
 source scripts/run_lib.sh

@@ -1,0 +1,4 @@
+strategy,accuracy,mean_input_tokens,mean_output_tokens,mean_seconds,truncation_rate,extraction_rate
+single,0.58,108.38,686.68,71.15445083599771,0.0,1.0
+parallel,0.7,325.14,1826.34,190.5621781179891,0.13999999999999999,0.86
+sequential,0.68,854.54,1170.8,121.32006805800833,0.08,0.98

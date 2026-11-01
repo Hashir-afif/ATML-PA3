@@ -1,0 +1,119 @@
+{
+  "variant": "default",
+  "seed": 6304,
+  "updates": 4500,
+  "examples": 72000,
+  "effective_batch": 16,
+  "stages": [
+    {
+      "name": "caption_alignment",
+      "updates": 2250,
+      "connector_lr": 0.001,
+      "lora_lr": null,
+      "mixture": {
+        "caption": 1.0
+      }
+    },
+    {
+      "name": "visual_instruction_tuning",
+      "updates": 1500,
+      "connector_lr": 0.0001,
+      "lora_lr": 2e-05,
+      "mixture": {
+        "presence": 0.5,
+        "counting": 0.25,
+        "caption": 0.25
+      }
+    },
+    {
+      "name": "natural_vqa",
+      "updates": 750,
+      "connector_lr": 5e-05,
+      "lora_lr": 1e-05,
+      "mixture": {
+        "vqa": 0.7,
+        "presence": 0.1,
+        "counting": 0.1,
+        "caption": 0.1
+      }
+    }
+  ],
+  "lora": {
+    "r": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ]
+  },
+  "n_visual_tokens": 196,
+  "train_seconds": 4940.648952699848,
+  "stage_seconds": {
+    "1": 1875.1864429999841,
+    "2": 1980.309319699998,
+    "3": 1085.1531899998663
+  },
+  "peak_gpu_allocated_gb": 2.855490207672119,
+  "peak_gpu_reserved_gb": 3.09375,
+  "trainable_params_by_stage": {
+    "1": {
+      "connector": 1837056,
+      "lora": 0
+    },
+    "2": {
+      "connector": 1837056,
+      "lora": 4587520
+    },
+    "3": {
+      "connector": 1837056,
+      "lora": 4587520
+    }
+  },
+  "skipped_updates": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "calibration": {
+    "rule": "scale fc2 by mean text-embedding norm / mean initial visual-token norm (training data only)",
+    "text_embedding_mean_norm": 0.8728469610214233,
+    "visual_token_mean_norm_before": 15.878499984741211,
+    "scale": 0.05497036633562393,
+    "visual_token_mean_norm_after": 0.8728469610214233,
+    "n_images": 512,
+    "n_text_tokens": 226553
+  },
+  "mixture_draws_by_stage": {
+    "1": {
+      "caption": 18000
+    },
+    "2": {
+      "presence": 5968,
+      "counting": 3023,
+      "caption": 3009
+    },
+    "3": {
+      "vqa": 4193,
+      "caption": 627,
+      "presence": 590,
+      "counting": 590
+    }
+  },
+  "truncated_examples_total": 0,
+  "environment": {
+    "python": "3.12.13",
+    "platform": "win32",
+    "git_commit": "92d1e583609ae280841a0c51741f7cc1994ce65a",
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.1",
+    "cuda": "12.8",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  },
+  "note": "train_seconds excludes development evaluation time"
+}

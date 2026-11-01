@@ -43,11 +43,20 @@ Measured / estimated wall clock on the RTX 4060 Laptop GPU:
 |---|---|---|
 | Task 3 | offline analysis ~3 min; live generation (50 questions, ~10 tok/s for the 3B FP16 model) | ~3.5-5 h |
 | Task 2 | feature caching ~3 min; 4,500 updates at ~0.9 s; evaluation ~3 min | ~1.5-2 h |
-| Task 1 | five 1,250-update runs (Full FT ~11-16 s/update with optimizer offload, LoRA ~10 s, OPLoRA ~12 s); seven lm-eval passes (~30-60 min each) | ~25-30 h |
+| Task 1 | five 1,250-update runs (Full FT ~11-16 s/update with optimizer offload, LoRA ~10 s, OPLoRA ~12 s); seven lm-eval passes (**measured** ~132 min each: 117 min GSM8K generation at batch 8 + 15 min likelihood tasks at batch 4) | ~35-40 h |
 
-Plan for roughly three nights. Keep the laptop plugged in and stop Windows from sleeping during the run
-(for example `powercfg /change standby-timeout-ac 0`, restored afterwards). Disk: Task 1 recovery checkpoints
-use ~60 GB (Full FT states are 7.2 GB each); Task 2 features ~2.8 GB.
+Plan for roughly four nights given Task 1 alone, or see the Kaggle option below. Keep the laptop plugged in and
+stop Windows from sleeping during the run (for example `powercfg /change standby-timeout-ac 0`, restored
+afterwards). Disk: Task 1 recovery checkpoints use ~60 GB (Full FT states are 7.2 GB each); Task 2 features
+~2.8 GB.
+
+Evaluation batch sizes are fixed (8 for GSM8K generation, 4 for the likelihood tasks), not `"auto"`: lm-eval's
+adaptive batching relies on `accelerate.find_executable_batch_size`, whose OOM detection does a substring match
+for `" out of memory."` with a trailing period; `torch==2.11.0+cu128`'s CUDA OOM messages put `out of memory` on
+its own line with no trailing period before the newline, so the match never fires and an OOM crashes the run
+instead of triggering a smaller retry. Confirmed on both the 8 GB laptop GPU and Kaggle's 16 GB T4 (same torch
+version). The fixed batch size 4 was sized for BoolQ's worst case (1,272 tokens, measured) and verified end to
+end on a full (no `--limit`) run of all four benchmarks with no OOM.
 
 ### Running Task 1 on Kaggle (faster option)
 
@@ -70,6 +79,13 @@ smoke batches), checkpoints in scratch space, and `train.prune_recovery` (supers
 non-evaluated weights deleted once a newer checkpoint exists, to fit the ~20 GB output limit). torch comes from
 the Kaggle image; transformers / tokenizers / lm-eval / datasets are pinned to the local versions
 (`kaggle/requirements-kaggle.txt`). All seven Task 1 conditions are evaluated in the same environment.
+
+**Expected session count**: training times are measured from a real Kaggle run (full ~151 min, L2-SP ~164 min,
+LoRA-4 ~158 min, OPLoRA-16 ~182 min on a T4; LoRA-16 untested but similar). Evaluation is budgeted from the local
+8 GB GPU's measured ~132 min/condition, not yet confirmed on a T4 end to end (every Kaggle evaluation attempt so
+far hit the OOM bug fixed in this update) -- it may be faster or slower there. Total work across both parallel
+chains is roughly 17-18 GPU-hours; with an 11 h usable session, expect **at least 2 sessions**, possibly a third
+if the T4 evaluates slower than the laptop GPU.
 
 ## 3. Per-task commands
 

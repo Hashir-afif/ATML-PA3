@@ -75,12 +75,21 @@ eval:
     num_fewshot: 0
     apply_chat_template: true
     max_gen_toks: 1024
-    batch_size: 32
+    batch_size: 8           # implementation choice: fixed (see note below); generation's KV-cache memory
+                            # scales gently with batch, so this is conservative on both 8 GB and 16 GB GPUs
   likelihood:
     tasks: [hellaswag, boolq, arc_easy]
     num_fewshot: 0
     apply_chat_template: false
-    batch_size: 32
+    batch_size: 4           # implementation choice: fixed, not "auto". lm-eval's adaptive batching relies on
+                            # accelerate.find_executable_batch_size, whose OOM detection does a substring match
+                            # for " out of memory." (with a trailing period); torch==2.11.0+cu128's CUDA OOM
+                            # messages put "out of memory" on its own line with no trailing period, so the
+                            # match never fires and the retry silently never happens, crashing instead.
+                            # Confirmed on both the 8 GB laptop GPU and Kaggle's 16 GB T4 (same torch version).
+                            # 4 is sized for BoolQ's worst case (1,272 tokens, measured): the full-vocab FP32
+                            # log-softmax tensor is batch x length x 151,936 x 4 bytes ~= 2.9 GB at batch 4,
+                            # safe with headroom on 8 GB; verified by a full (no --limit) run on all four tasks.
   conditions: [baseline, full_mid, full, l2sp, lora4, lora16, oplora16]
 
 diagnostics:
