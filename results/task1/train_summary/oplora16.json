@@ -1,0 +1,158 @@
+{
+  "method": "oplora16",
+  "method_config": {
+    "kind": "oplora",
+    "lr": 0.001,
+    "r": 16,
+    "alpha": 32,
+    "protect_k": 128
+  },
+  "seed": 6304,
+  "model_id": "Qwen/Qwen3-0.6B",
+  "train_config": {
+    "microbatch": 2,
+    "grad_accum": 16,
+    "total_updates": 1250,
+    "warmup_updates": 38,
+    "schedule": "cosine",
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.01,
+    "max_grad_norm": 1.0,
+    "gradient_checkpointing": true,
+    "checkpoint_updates": [
+      312,
+      625,
+      937,
+      1250
+    ],
+    "midpoint_update": 625,
+    "prune_recovery": true,
+    "loss_chunk_tokens": 256,
+    "log_every": 1
+  },
+  "adapter_config": {
+    "dropout": 0.05,
+    "targets": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
+  },
+  "train_ids_file": "data/task1/train_ids.json",
+  "effective_batch": 32,
+  "updates": 1250,
+  "examples_seen": 40000,
+  "trainable_params": 10092544,
+  "total_params_unique": 606142464,
+  "train_seconds": 10825.626927554997,
+  "train_segments": [
+    {
+      "from": 0,
+      "to": 312,
+      "seconds": 2716.6107327889986
+    },
+    {
+      "from": 312,
+      "to": 625,
+      "seconds": 2712.316157972
+    },
+    {
+      "from": 625,
+      "to": 937,
+      "seconds": 2679.9585900950005
+    },
+    {
+      "from": 937,
+      "to": 1250,
+      "seconds": 2716.7414466989976
+    }
+  ],
+  "peak_gpu_allocated_gb": 2.292170524597168,
+  "peak_gpu_reserved_gb": 2.509765625,
+  "skipped_updates": [],
+  "final_sft_loss": 0.174776254221797,
+  "checkpoints": {
+    "312": {
+      "method": "oplora16",
+      "update": 312,
+      "examples_seen": 9984,
+      "weights_bytes": 40410768,
+      "recovery_state_bytes": 161913876,
+      "save_seconds": 0.30145658000037656,
+      "pruned": true
+    },
+    "625": {
+      "method": "oplora16",
+      "update": 625,
+      "examples_seen": 20000,
+      "weights_bytes": 40410768,
+      "recovery_state_bytes": 161913877,
+      "save_seconds": 0.32677455600060057,
+      "pruned": true
+    },
+    "937": {
+      "method": "oplora16",
+      "update": 937,
+      "examples_seen": 29984,
+      "weights_bytes": 40410768,
+      "recovery_state_bytes": 161913938,
+      "save_seconds": 0.31721776500126,
+      "pruned": true
+    },
+    "1250": {
+      "method": "oplora16",
+      "update": 1250,
+      "examples_seen": 40000,
+      "weights_bytes": 40410768,
+      "recovery_state_bytes": 161914006,
+      "save_seconds": 0.30017887000212795
+    }
+  },
+  "checkpoint_weights_bytes_final": 40410768,
+  "precision": "frozen FP16 backbone + FP32 adapters, FP16 autocast",
+  "optimizer": "AdamW",
+  "environment": {
+    "python": "3.13.15",
+    "platform": "linux",
+    "git_commit": "92d1e583609ae280841a0c51741f7cc1994ce65a",
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.1",
+    "cuda": "12.8",
+    "gpu": "Tesla T4"
+  },
+  "config_overrides": {
+    "offload_optimizer_states": false,
+    "train.prune_recovery": true,
+    "paths.checkpoints": "/kaggle/tmp/checkpoints/task1",
+    "paths.merged": "/kaggle/tmp/checkpoints/task1/merged"
+  },
+  "method_overhead": {
+    "adapter": {
+      "method": "oplora",
+      "r": 16,
+      "alpha": 32,
+      "dropout": 0.05,
+      "targets": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj"
+      ],
+      "n_modules": 196,
+      "adapter_params": 10092544,
+      "svd_seconds": 130.87283364398536,
+      "basis_bytes": 322961408
+    }
+  }
+}

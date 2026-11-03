@@ -1,0 +1,19 @@
+{
+  "method": "lora16",
+  "n_modules_merged": 196,
+  "scaling": 2.0,
+  "merge_seconds": 8.008186269000362,
+  "n_check_sequences": 4,
+  "n_check_tokens": 764,
+  "logits_max_abs_diff": 0.0927734375,
+  "logits_mean_abs_diff": 0.005711955018341541,
+  "argmax_agreement": 0.996073305606842,
+  "exported_vs_recomputed_factor_max_abs_diff": 0.0,
+  "oplora_constraints": {
+    "max_rel_UkT_dW": null,
+    "max_rel_dW_Vk": null
+  },
+  "dtype_merged": "float16",
+  "note": "merged FP16 W0 + dW vs unmerged FP16 W0 x + FP32-adapter path",
+  "merged_dir_bytes": 1208018589
+}

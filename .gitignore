@@ -22,5 +22,8 @@ results/report.md
 *.tmp
 *.part
 
+# downloaded Kaggle output archive (already extracted into results/task1/; not itself a source artifact)
+results_task1.zip
+
 # course manual (not code; kept local only)
 ATML-PA3*.pdf

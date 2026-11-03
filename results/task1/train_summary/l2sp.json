@@ -1,0 +1,145 @@
+{
+  "method": "l2sp",
+  "method_config": {
+    "kind": "full",
+    "lr": 2e-05,
+    "l2sp_lambda": 0.001
+  },
+  "seed": 6304,
+  "model_id": "Qwen/Qwen3-0.6B",
+  "train_config": {
+    "microbatch": 2,
+    "grad_accum": 16,
+    "total_updates": 1250,
+    "warmup_updates": 38,
+    "schedule": "cosine",
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.01,
+    "max_grad_norm": 1.0,
+    "gradient_checkpointing": true,
+    "checkpoint_updates": [
+      312,
+      625,
+      937,
+      1250
+    ],
+    "midpoint_update": 625,
+    "prune_recovery": true,
+    "loss_chunk_tokens": 256,
+    "log_every": 1
+  },
+  "adapter_config": null,
+  "train_ids_file": "data/task1/train_ids.json",
+  "effective_batch": 32,
+  "updates": 1250,
+  "examples_seen": 40000,
+  "trainable_params": 596049920,
+  "total_params_unique": 596049920,
+  "train_seconds": 9723.453872961,
+  "train_segments": [
+    {
+      "from": 0,
+      "to": 312,
+      "seconds": 2423.680904514
+    },
+    {
+      "from": 312,
+      "to": 625,
+      "seconds": 2495.6110385130005
+    },
+    {
+      "from": 625,
+      "to": 937,
+      "seconds": 2401.9800706939986
+    },
+    {
+      "from": 937,
+      "to": 1250,
+      "seconds": 2402.1818592399995
+    }
+  ],
+  "peak_gpu_allocated_gb": 10.827048778533936,
+  "peak_gpu_reserved_gb": 11.37109375,
+  "skipped_updates": [],
+  "final_sft_loss": 0.16426822124049067,
+  "checkpoints": {
+    "312": {
+      "method": "l2sp",
+      "update": 312,
+      "examples_seen": 9984,
+      "weights_bytes": 2400118774,
+      "recovery_state_bytes": 7168802952,
+      "save_seconds": 42.62549445700006,
+      "displacement_l2": 5.6723574939651416,
+      "pruned": true
+    },
+    "625": {
+      "method": "l2sp",
+      "update": 625,
+      "examples_seen": 20000,
+      "weights_bytes": 2400118774,
+      "recovery_state_bytes": 7168803017,
+      "save_seconds": 27.582547130999956,
+      "displacement_l2": 6.441470547568469,
+      "pruned": true
+    },
+    "937": {
+      "method": "l2sp",
+      "update": 937,
+      "examples_seen": 29984,
+      "weights_bytes": 2400118774,
+      "recovery_state_bytes": 7168803080,
+      "save_seconds": 21.923289661001036,
+      "displacement_l2": 6.33705402786265,
+      "pruned": true
+    },
+    "1250": {
+      "method": "l2sp",
+      "update": 1250,
+      "examples_seen": 40000,
+      "weights_bytes": 2400118774,
+      "recovery_state_bytes": 7168803081,
+      "save_seconds": 32.95558070399966,
+      "displacement_l2": 6.274224825748323
+    }
+  },
+  "checkpoint_weights_bytes_final": 2400118774,
+  "precision": "FP32 master weights + FP16 autocast",
+  "optimizer": "AdamW",
+  "environment": {
+    "python": "3.13.15",
+    "platform": "linux",
+    "git_commit": "92d1e583609ae280841a0c51741f7cc1994ce65a",
+    "torch": "2.11.0+cu128",
+    "transformers": "4.57.1",
+    "cuda": "12.8",
+    "gpu": "Tesla T4"
+  },
+  "config_overrides": {
+    "offload_optimizer_states": false,
+    "train.prune_recovery": true,
+    "paths.checkpoints": "/kaggle/tmp/checkpoints/task1",
+    "paths.merged": "/kaggle/tmp/checkpoints/task1/merged"
+  },
+  "method_overhead": {
+    "reference_theta0": {
+      "storage_dtype": "bfloat16",
+      "storage_bytes": 1192099840,
+      "n_params": 596049920,
+      "penalty_seconds_last_segment": 526.6530170739697,
+      "transfer_bytes_last_segment": 1494893199360,
+      "used_in_objective": true,
+      "lambda": 0.001
+    }
+  },
+  "displacement_l2": {
+    "312": 5.6723574939651416,
+    "625": 6.441470547568469,
+    "937": 6.33705402786265,
+    "1250": 6.274224825748323
+  }
+}

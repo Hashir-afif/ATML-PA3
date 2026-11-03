@@ -47,6 +47,30 @@ def find_previous() -> Path | None:
     return best
 
 
+def copy_tree_additive(src: Path, dst: Path) -> tuple[int, int]:
+    """Copy every file under src to the matching path under dst, skipping any file dst already has.
+
+    Used for results/task1: the freshly cloned repo may already carry finished, git-committed results (as
+    happened here -- a locally run, pushed baseline evaluation), and a previous session's own copy of
+    results/task1 can be from a crashed, partial attempt. A blind `copytree(dirs_exist_ok=True)` would let
+    that partial attempt silently overwrite good, already-committed files with mixed-provenance data. Returns
+    (files copied, files skipped because dst already had them).
+    """
+    copied = skipped = 0
+    for f in src.rglob("*"):
+        if f.is_dir():
+            continue
+        rel = f.relative_to(src)
+        target = dst / rel
+        if target.exists():
+            skipped += 1
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(f, target)
+        copied += 1
+    return copied, skipped
+
+
 def do_import() -> None:
     prev = find_previous()
     if prev is None:
@@ -55,8 +79,10 @@ def do_import() -> None:
     print(f"importing previous session from {prev}")
     res = next(iter(prev.glob("**/results/task1")), None)
     if res is not None:
-        shutil.copytree(res, REPO / "results" / "task1", dirs_exist_ok=True)
-        print(f"  results/task1 <- {res}")
+        copied, skipped = copy_tree_additive(res, REPO / "results" / "task1")
+        print(f"  results/task1 <- {res} ({copied} files copied, {skipped} already present and kept)")
+    # Checkpoints are intentionally overwritten: each update directory is self-contained (named by update
+    # number) and the latest copy of an in-progress update's state is always the one to resume from.
     src = prev / "carry" / "checkpoints" / "task1"
     if src.exists():
         CKPT.mkdir(parents=True, exist_ok=True)
